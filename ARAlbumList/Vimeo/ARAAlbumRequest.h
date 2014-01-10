@@ -12,4 +12,6 @@
 
 - (void)requestAlbumList:(void(^)(id responseData))block;
 
+- (void)requestAlbumListPage:(NSInteger)page response:(void(^)(id responseData))block;
+
 @end

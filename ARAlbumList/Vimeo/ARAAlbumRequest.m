@@ -24,4 +24,16 @@ static NSString * const urlStr = @"http://vimeo.com/api/v2/album/58/videos.json"
     }];
 }
 
+- (void)requestAlbumListPage:(NSInteger)page response:(void (^)(id))block
+{
+    NSString *pageUrlStr = [NSString stringWithFormat:@"%@?page=%d", urlStr, page];
+    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    [manager GET:pageUrlStr parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        block(responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Error: %@", error);
+        block(nil);
+    }];
+}
+
 @end

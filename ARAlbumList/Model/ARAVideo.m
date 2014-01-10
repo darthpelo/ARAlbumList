@@ -14,7 +14,11 @@
 {
     // video
     self.title = dict[@"title"];
-    self.description = dict[@"description"];
+    NSRange r;
+    NSString *s = dict[@"description"];
+    while ((r = [s rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound)
+        s = [s stringByReplacingCharactersInRange:r withString:@""];
+    self.description = [[s componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] componentsJoinedByString:@" "];
     self.uploadDate = dict[@"upload_date"];
     self.videoThumbUrl = dict[@"thumbnail_medium"];
     
