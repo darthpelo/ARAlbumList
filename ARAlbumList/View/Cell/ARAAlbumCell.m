@@ -27,8 +27,8 @@
 }
 
 -(void)awakeFromNib{
-    UIColor* mainColor = [UIColor colorWithRed:100.0/255 green:35.0/255 blue:87.0/255 alpha:1.0f];
-    UIColor* neutralColor = [UIColor colorWithWhite:0.5 alpha:1.0];
+    UIColor* mainColor = [UIColor colorWithWhite:1.0 alpha:1.0];
+    UIColor* neutralColor = [UIColor colorWithWhite:0.7 alpha:1.0];
     
     NSString* fontName = @"Avenir-Book";
     NSString* boldFontName = @"Avenir-Black";

@@ -12,6 +12,8 @@
 #import "ARAAlbumCell.h"
 #import "AFNetworkActivityIndicatorManager.h"
 #import "UIImageView+AFNetworking.h"
+#import "UIActivityIndicatorView+AFNetworking.h"
+#import "UIAlertView+AFNetworking.h"
 
 @interface ARAViewController () {
     NSMutableArray *videoList;
@@ -27,7 +29,6 @@
     self = [super initWithStyle:style];
     if (self) {
         // Custom initialization
-        videoList = [[NSMutableArray alloc] init];
     }
     return self;
 }
@@ -35,8 +36,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    [self getAlbumList];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -58,15 +57,19 @@
 
 - (void)getAlbumList
 {
-    [[AFNetworkActivityIndicatorManager sharedManager] incrementActivityCount];
+    UIAlertView *alertDownload = [[UIAlertView alloc] initWithTitle:@"Downloading..." message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+    UIActivityIndicatorView *act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    [alertDownload setValue:act forKey:@"accessoryView"];
+    [alertDownload show];
+    [act startAnimating];
     
     albumRequest = [[ARAAlbumRequest alloc] init];
     
     [albumRequest requestAlbumList:^(id responseData) {
         if (responseData == nil) {
+            [alertDownload dismissWithClickedButtonIndex:0 animated:YES];
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Network error occured. Retry later..." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
             [alert show];
-            [[AFNetworkActivityIndicatorManager sharedManager] decrementActivityCount];
         } else {
             for (NSDictionary *dict in responseData) {
                 ARAVideo *video = [[ARAVideo alloc] init];
@@ -74,7 +77,26 @@
                 [videoList addObject:video];
             }
             [self.tableView reloadData];
-            [[AFNetworkActivityIndicatorManager sharedManager] decrementActivityCount];
+            
+            ARAVideo *video = [videoList objectAtIndex:0];
+            
+            UIView *tableViewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 80)];
+            UILabel *userName = [[UILabel alloc] initWithFrame:CGRectMake(100, 30, 200, 24)];
+            NSString* boldFontName = @"Avenir-Black";
+            [userName setFont:[UIFont fontWithName:boldFontName size:20]];
+            userName.text = video.userName;
+            userName.textColor = [UIColor blueColor];
+            UIImageView *userImage = [[UIImageView alloc] initWithFrame:CGRectMake(20, 20, 50, 50)];
+            [userImage setImageWithURL:[NSURL URLWithString:video.userThumbUrl]];
+            userImage.clipsToBounds = YES;
+            userImage.layer.cornerRadius = 20.0f;
+            userImage.layer.borderWidth = 2.0f;
+            userImage .layer.borderColor = [UIColor blueColor].CGColor;
+            [tableViewHeader addSubview:userImage];
+            [tableViewHeader addSubview:userName];
+            self.tableView.tableHeaderView = tableViewHeader;
+            
+            [alertDownload dismissWithClickedButtonIndex:0 animated:YES];
         }
     }];
     
@@ -106,16 +128,16 @@
     ARAVideo *video = [videoList objectAtIndex:indexPath.row];
     
     if (video.videoThumb == nil) {
+        [cell.activityIndicator startAnimating];
         NSURL *url = [NSURL URLWithString:video.videoThumbUrl];
         NSURLRequest *request = [NSURLRequest requestWithURL:url];
-        [[AFNetworkActivityIndicatorManager sharedManager] incrementActivityCount];
         [cell.picImageView setImageWithURLRequest:request placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+            [cell.activityIndicator stopAnimating];
+            [cell.activityIndicator setHidden:YES];
             cell.picImageView.image = image;
             video.videoThumb = image;
-            [[AFNetworkActivityIndicatorManager sharedManager] decrementActivityCount];
         } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
             NSLog(@"%@", error);
-            [[AFNetworkActivityIndicatorManager sharedManager] decrementActivityCount];
         }];
     } else
         cell.picImageView.image = video.videoThumb;
