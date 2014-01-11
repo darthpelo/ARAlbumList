@@ -79,6 +79,7 @@ static NSInteger const max_pages = 3;
     
     if (lastPage < max_pages) {
         lastPage++;
+        
         [albumRequest requestAlbumListPage:lastPage response:^(id responseData) {
             if (responseData == nil) {
                 if (lastPage == 1)
@@ -92,6 +93,8 @@ static NSInteger const max_pages = 3;
                     [videoList addObject:video];
                 }
                 
+                // The tableview header with the user information, it should be configured to only load the first page of videos
+                // Tableview footer view activityview configuration
                 if (lastPage == 1) {
                     [alertDownload dismissWithClickedButtonIndex:0 animated:YES];
                     ARAVideo *video = [videoList objectAtIndex:0];
@@ -124,8 +127,10 @@ static NSInteger const max_pages = 3;
                 [self.tableView reloadData];
             }
         }];
-    } else
+    } else {
         [footerActivity stopAnimating];
+        lastPage++;
+    }
 }
 
 #pragma mark - Table view data source
@@ -152,21 +157,24 @@ static NSInteger const max_pages = 3;
     }
     
     ARAVideo *video = [videoList objectAtIndex:indexPath.row];
-    
+    [cell.activityIndicator startAnimating];
+    [cell.activityIndicator setHidden:NO];
     if (video.videoThumb == nil) {
-        [cell.activityIndicator startAnimating];
         NSURL *url = [NSURL URLWithString:video.videoThumbUrl];
         NSURLRequest *request = [NSURLRequest requestWithURL:url];
         [cell.picImageView setImageWithURLRequest:request placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
-            [cell.activityIndicator stopAnimating];
-            [cell.activityIndicator setHidden:YES];
             cell.picImageView.image = image;
             video.videoThumb = image;
+            [cell.activityIndicator stopAnimating];
+            [cell.activityIndicator setHidden:YES];
         } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
             NSLog(@"%@", error);
         }];
-    } else
+    } else {
         cell.picImageView.image = video.videoThumb;
+        [cell.activityIndicator stopAnimating];
+        [cell.activityIndicator setHidden:YES];
+    }
     
     cell.titleLabel.text = video.title;
     cell.descriptionLabel.text = video.description;
@@ -179,5 +187,32 @@ static NSInteger const max_pages = 3;
     
     return cell;
 }
+
+//#pragma mark - Scroll view delegate
+//
+//- (void)scrollViewDidScroll:(UIScrollView *)aScrollView {
+//    CGPoint offset = aScrollView.contentOffset;
+////    CGRect bounds = aScrollView.bounds;
+////    CGSize size = aScrollView.contentSize;
+////    UIEdgeInsets inset = aScrollView.contentInset;
+////    float y = offset.y + bounds.size.height - inset.bottom;
+//    NSIndexPath *pos = [self.tableView indexPathForRowAtPoint:offset];
+//    NSLog(@"Cell %d", pos.row);
+//    if (pos.row == (videoList.count - 2))
+//        [self getAlbumList];
+////    float h = size.height;
+////     NSLog(@"offset: %f", offset.y);
+////     NSLog(@"content.height: %f", size.height);
+////     NSLog(@"bounds.height: %f", bounds.size.height);
+////     NSLog(@"inset.top: %f", inset.top);
+////     NSLog(@"inset.bottom: %f", inset.bottom);
+////     NSLog(@"pos: %f of %f", y, h);
+////    
+////    float reload_distance = 0;
+////    if(y > h + reload_distance && lastPage > 0 && lastPage <= 4) {
+////        NSLog(@"load more rows - page %d", lastPage);
+////        [self getAlbumList];
+////    }
+//}
 
 @end
