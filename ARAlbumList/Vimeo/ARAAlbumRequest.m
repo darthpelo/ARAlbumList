@@ -13,6 +13,12 @@
 
 static NSString * const urlStr = @"http://vimeo.com/api/v2/album/58/videos.json";
 
+@interface ARAAlbumRequest () {
+    BOOL reachable;
+}
+
+@end
+
 @implementation ARAAlbumRequest
 
 - (id)init
@@ -25,7 +31,9 @@ static NSString * const urlStr = @"http://vimeo.com/api/v2/album/58/videos.json"
         reachable = YES;
         
         [[AFNetworkReachabilityManager sharedManager] setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
+#ifdef DEBUG
             NSLog(@"Reachability: %@", AFStringFromNetworkReachabilityStatus(status));
+#endif
             if (status > 0)
                 reachable = YES;
             else

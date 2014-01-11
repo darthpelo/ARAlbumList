@@ -210,7 +210,11 @@ static NSInteger const max_pages = 3;
             [cell.activityIndicator stopAnimating];
             [cell.activityIndicator setHidden:YES];
         } failure:^{
+#ifdef DEBUG
             NSLog(@"Fail download image");
+#endif
+            cell.picImageView.image = nil;
+            video.videoThumb = nil;
         }];
     } else {
         cell.picImageView.image = video.videoThumb;

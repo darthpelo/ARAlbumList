@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BEDE4A0D188180CC00FE2899 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEDE4A0B18817A0600FE2899 /* SystemConfiguration.framework */; };
 		BEED2E88187E98BD009D8C18 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEED2E87187E98BD009D8C18 /* Foundation.framework */; };
 		BEED2E8A187E98BD009D8C18 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEED2E89187E98BD009D8C18 /* CoreGraphics.framework */; };
 		BEED2E8C187E98BD009D8C18 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEED2E8B187E98BD009D8C18 /* UIKit.framework */; };
@@ -120,6 +121,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BEDE4A0D188180CC00FE2899 /* SystemConfiguration.framework in Frameworks */,
 				BEED2E8A187E98BD009D8C18 /* CoreGraphics.framework in Frameworks */,
 				BEED2E8C187E98BD009D8C18 /* UIKit.framework in Frameworks */,
 				BEED2E88187E98BD009D8C18 /* Foundation.framework in Frameworks */,
