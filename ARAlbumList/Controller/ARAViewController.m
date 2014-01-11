@@ -197,24 +197,31 @@ static NSInteger const max_pages = 3;
     ARAAlbumCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
     if (cell == nil) {
         cell = [[ARAAlbumCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
-        
     }
     
     ARAVideo *video = [videoList objectAtIndex:indexPath.row];
+    
     [cell.activityIndicator startAnimating];
     [cell.activityIndicator setHidden:NO];
     if (video.videoThumb == nil) {
         [albumRequest requestAlbumThumb:video.videoThumbUrl success:^(UIImage *image) {
-            cell.picImageView.image = image;
-            video.videoThumb = image;
-            [cell.activityIndicator stopAnimating];
-            [cell.activityIndicator setHidden:YES];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                ARAAlbumCell *updateCell = (id)[tableView cellForRowAtIndexPath:indexPath];
+                if (updateCell) {
+                    updateCell.picImageView.image = image;
+                    video.videoThumb = image;
+                    [cell.activityIndicator stopAnimating];
+                    [cell.activityIndicator setHidden:YES];
+                }
+            });
         } failure:^{
 #ifdef DEBUG
             NSLog(@"Fail download image");
 #endif
             cell.picImageView.image = nil;
             video.videoThumb = nil;
+            [cell.activityIndicator stopAnimating];
+            [cell.activityIndicator setHidden:YES];
         }];
     } else {
         cell.picImageView.image = video.videoThumb;
