@@ -53,6 +53,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BEDE4A0B18817A0600FE2899 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		BEED2E84187E98BD009D8C18 /* ARAlbumList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARAlbumList.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BEED2E87187E98BD009D8C18 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		BEED2E89187E98BD009D8C18 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -160,6 +161,7 @@
 		BEED2E86187E98BD009D8C18 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BEDE4A0B18817A0600FE2899 /* SystemConfiguration.framework */,
 				BEED2E87187E98BD009D8C18 /* Foundation.framework */,
 				BEED2E89187E98BD009D8C18 /* CoreGraphics.framework */,
 				BEED2E8B187E98BD009D8C18 /* UIKit.framework */,

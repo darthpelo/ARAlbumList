@@ -14,6 +14,7 @@
 #import "UIImageView+AFNetworking.h"
 #import "UIActivityIndicatorView+AFNetworking.h"
 #import "UIAlertView+AFNetworking.h"
+#import "AFNetworkReachabilityManager.h"
 
 static NSInteger const max_pages = 3;
 
@@ -47,6 +48,13 @@ static NSInteger const max_pages = 3;
     [super viewDidLoad];
     
     self.navigationController.navigationBar.barTintColor = [UIColor blueColor];
+    
+    UIRefreshControl *refresh = [[UIRefreshControl alloc] init];
+    refresh.attributedTitle = [[NSAttributedString alloc] initWithString:@"Pull to Refresh"];
+    [refresh addTarget:self
+                action:@selector(refreshView:)
+      forControlEvents:UIControlEventValueChanged];
+    self.refreshControl = refresh;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -55,11 +63,13 @@ static NSInteger const max_pages = 3;
     
     if (videoList == nil) {
         videoList = [[NSMutableArray alloc] init];
+        
         alertDownload = [[UIAlertView alloc] initWithTitle:@"Downloading..." message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
         act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         [alertDownload setValue:act forKey:@"accessoryView"];
         [alertDownload show];
         [act startAnimating];
+        
         [self getAlbumList];
     }
 }
@@ -71,6 +81,29 @@ static NSInteger const max_pages = 3;
     videoList = nil;
 }
 
+#pragma mark - Privete Methods
+
+- (void)refreshView:(UIRefreshControl *)refresh
+{
+    if (videoList == nil)
+        videoList = [[NSMutableArray alloc] init];
+    [videoList removeAllObjects];
+    
+    alertDownload = [[UIAlertView alloc] initWithTitle:@"Downloading..." message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+    act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    [alertDownload setValue:act forKey:@"accessoryView"];
+    [alertDownload show];
+    [act startAnimating];
+    
+    lastPage = 0;
+    
+    [self.tableView reloadData];
+    
+    [self getAlbumList];
+    
+    [refresh endRefreshing];
+}
+
 - (void)getAlbumList
 {
     if (albumRequest == nil) {
@@ -80,12 +113,21 @@ static NSInteger const max_pages = 3;
     if (lastPage < max_pages) {
         lastPage++;
         
+        if (footerActivity) {
+            [footerActivity startAnimating];
+            [footerActivity setHidden:NO];
+        }
+        
         [albumRequest requestAlbumListPage:lastPage response:^(id responseData) {
             if (responseData == nil) {
                 if (lastPage == 1)
                     [alertDownload dismissWithClickedButtonIndex:0 animated:YES];
+                
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Network error occured. Retry later..." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [alert show];
+                
+                [footerActivity stopAnimating];
+                [footerActivity setHidden:YES];
             } else {
                 for (NSDictionary *dict in responseData) {
                     ARAVideo *video = [[ARAVideo alloc] init];
@@ -97,6 +139,7 @@ static NSInteger const max_pages = 3;
                 // Tableview footer view activityview configuration
                 if (lastPage == 1) {
                     [alertDownload dismissWithClickedButtonIndex:0 animated:YES];
+                    
                     ARAVideo *video = [videoList objectAtIndex:0];
                     
                     UIView *tableViewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 80)];
@@ -119,8 +162,9 @@ static NSInteger const max_pages = 3;
                     footerActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
                     [footerActivity setFrame:CGRectMake((320 - footerActivity.frame.size.width) / 2, (45 - footerActivity.frame.size.height) / 2, footerActivity.frame.size.width, footerActivity.frame.size.height)];
                     [tableViewFooter addSubview:footerActivity];
-                    [footerActivity setHidesWhenStopped:YES];
                     [footerActivity startAnimating];
+                    [footerActivity setHidden:NO];
+                    
                     self.tableView.tableFooterView = tableViewFooter;
                 }
                 
@@ -144,7 +188,7 @@ static NSInteger const max_pages = 3;
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     // Return the number of rows in the section.
-    return videoList.count;
+    return (videoList.count > 0 && videoList)?videoList.count:0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -160,15 +204,13 @@ static NSInteger const max_pages = 3;
     [cell.activityIndicator startAnimating];
     [cell.activityIndicator setHidden:NO];
     if (video.videoThumb == nil) {
-        NSURL *url = [NSURL URLWithString:video.videoThumbUrl];
-        NSURLRequest *request = [NSURLRequest requestWithURL:url];
-        [cell.picImageView setImageWithURLRequest:request placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+        [albumRequest requestAlbumThumb:video.videoThumbUrl success:^(UIImage *image) {
             cell.picImageView.image = image;
             video.videoThumb = image;
             [cell.activityIndicator stopAnimating];
             [cell.activityIndicator setHidden:YES];
-        } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
-            NSLog(@"%@", error);
+        } failure:^{
+            NSLog(@"Fail download image");
         }];
     } else {
         cell.picImageView.image = video.videoThumb;
@@ -187,32 +229,5 @@ static NSInteger const max_pages = 3;
     
     return cell;
 }
-
-//#pragma mark - Scroll view delegate
-//
-//- (void)scrollViewDidScroll:(UIScrollView *)aScrollView {
-//    CGPoint offset = aScrollView.contentOffset;
-////    CGRect bounds = aScrollView.bounds;
-////    CGSize size = aScrollView.contentSize;
-////    UIEdgeInsets inset = aScrollView.contentInset;
-////    float y = offset.y + bounds.size.height - inset.bottom;
-//    NSIndexPath *pos = [self.tableView indexPathForRowAtPoint:offset];
-//    NSLog(@"Cell %d", pos.row);
-//    if (pos.row == (videoList.count - 2))
-//        [self getAlbumList];
-////    float h = size.height;
-////     NSLog(@"offset: %f", offset.y);
-////     NSLog(@"content.height: %f", size.height);
-////     NSLog(@"bounds.height: %f", bounds.size.height);
-////     NSLog(@"inset.top: %f", inset.top);
-////     NSLog(@"inset.bottom: %f", inset.bottom);
-////     NSLog(@"pos: %f of %f", y, h);
-////    
-////    float reload_distance = 0;
-////    if(y > h + reload_distance && lastPage > 0 && lastPage <= 4) {
-////        NSLog(@"load more rows - page %d", lastPage);
-////        [self getAlbumList];
-////    }
-//}
 
 @end
