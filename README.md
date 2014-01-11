@@ -11,7 +11,7 @@ I use Vimeo’s public API, so there is no need to implement authentication. Spe
 
 Authors
 --------
-[darthpelo](mailto:darthpelo@gmail.com) developer
+[darthpelo](mailto:darthpelo@gmail.com)
 
 License
 -------
