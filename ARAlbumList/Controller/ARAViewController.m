@@ -48,7 +48,9 @@ static NSInteger const max_pages = 3;
     [super viewDidLoad];
     
     if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-        self.navigationController.navigationBar.barTintColor = [UIColor blueColor];
+        self.navigationController.navigationBar.barTintColor = [UIColor colorWithRed:26.0/255 green:183.0/255 blue:234.0/255 alpha:1.0f];
+    
+    self.tableView.backgroundColor = UIColorFromHex(0x7DD7F4);
     
     UIRefreshControl *refresh = [[UIRefreshControl alloc] init];
     refresh.attributedTitle = [[NSAttributedString alloc] initWithString:@"Pull to Refresh"];
@@ -98,13 +100,15 @@ static NSInteger const max_pages = 3;
     NSString* boldFontName = (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))?@"Avenir-Light":@"Avenir-Black";
     [userName setFont:[UIFont fontWithName:boldFontName size:20]];
     userName.text = name;
-    userName.textColor = [UIColor blueColor];
+    userName.textColor = UIColorFromHex(0xFF3814);
+    if (SYSTEM_VERSION_LESS_THAN(@"7.0"))
+        [userName setBackgroundColor:[UIColor clearColor]];
     UIImageView *userImage = [[UIImageView alloc] initWithFrame:CGRectMake(17, 20, 50, 50)];
     [userImage setImageWithURL:[NSURL URLWithString:url]];
     userImage.clipsToBounds = YES;
     userImage.layer.cornerRadius = 25.0f;
     userImage.layer.borderWidth = 1.5f;
-    userImage .layer.borderColor = [UIColor blueColor].CGColor;
+    userImage .layer.borderColor = UIColorFromHex(0xFF3814).CGColor;
     [tableViewHeader addSubview:userImage];
     [tableViewHeader addSubview:userName];
     self.tableView.tableHeaderView = tableViewHeader;
@@ -255,8 +259,8 @@ static NSInteger const max_pages = 3;
     cell.descriptionLabel.text = video.description;
     cell.dateLabel.text = video.uploadDate;
     
-    // Check end list
-    if (indexPath.row == videoList.count - 3) {
+    // Check end list to try download next almbum's page (if present)
+    if (indexPath.row == videoList.count - 2) {
         [self getAlbumList];
     }
     

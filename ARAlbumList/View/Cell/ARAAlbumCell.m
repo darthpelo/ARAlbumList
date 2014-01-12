@@ -44,7 +44,7 @@
     
     self.feedContainer.layer.cornerRadius = 3.0f;
     self.feedContainer.clipsToBounds = YES;
-    self.feedContainer.backgroundColor = [UIColor darkGrayColor];
+    self.feedContainer.backgroundColor = UIColorFromHex(0x087498);
     
     self.picImageView.contentMode = UIViewContentModeScaleAspectFill;
     self.picImageView.clipsToBounds = YES;
