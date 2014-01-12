@@ -30,11 +30,11 @@
     UIColor* mainColor = [UIColor colorWithWhite:1.0 alpha:1.0];
     UIColor* neutralColor = [UIColor colorWithWhite:0.7 alpha:1.0];
     
-    NSString* fontName = @"Avenir-Book";
-    NSString* boldFontName = @"Avenir-Black";
+    NSString* fontName = @"Avenir-Light";
+    NSString* boldFontName = @"Avenir-Book";
     
     self.titleLabel.textColor = mainColor;
-    self.titleLabel.font = [UIFont fontWithName:boldFontName size:16.0f];
+    self.titleLabel.font = [UIFont fontWithName:boldFontName size:17.0f];
     
     self.descriptionLabel.textColor =  neutralColor;
     self.descriptionLabel.font =  [UIFont fontWithName:fontName size:10.0f];

@@ -91,6 +91,33 @@ static NSInteger const max_pages = 3;
 
 #pragma mark - Privete Methods
 
+- (void)setupTableviewHeaderAndFooter:(NSString *)url userNanme:(NSString *)name
+{
+    UIView *tableViewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 80)];
+    UILabel *userName = [[UILabel alloc] initWithFrame:CGRectMake(74, 35, 230, 22)];
+    NSString* boldFontName = (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))?@"Avenir-Light":@"Avenir-Black";
+    [userName setFont:[UIFont fontWithName:boldFontName size:20]];
+    userName.text = name;
+    userName.textColor = [UIColor blueColor];
+    UIImageView *userImage = [[UIImageView alloc] initWithFrame:CGRectMake(17, 20, 50, 50)];
+    [userImage setImageWithURL:[NSURL URLWithString:url]];
+    userImage.clipsToBounds = YES;
+    userImage.layer.cornerRadius = 25.0f;
+    userImage.layer.borderWidth = 1.5f;
+    userImage .layer.borderColor = [UIColor blueColor].CGColor;
+    [tableViewHeader addSubview:userImage];
+    [tableViewHeader addSubview:userName];
+    self.tableView.tableHeaderView = tableViewHeader;
+    
+    UIView *tableViewFooter = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 45)];
+    footerActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    [footerActivity setFrame:CGRectMake((320 - footerActivity.frame.size.width) / 2, (45 - footerActivity.frame.size.height) / 2, footerActivity.frame.size.width, footerActivity.frame.size.height)];
+    [tableViewFooter addSubview:footerActivity];
+    [footerActivity startAnimating];
+    [footerActivity setHidden:NO];
+    self.tableView.tableFooterView = tableViewFooter;
+}
+
 - (void)refreshView:(UIRefreshControl *)refresh
 {
     if (videoList == nil)
@@ -160,30 +187,7 @@ static NSInteger const max_pages = 3;
                     
                     ARAVideo *video = [videoList objectAtIndex:0];
                     
-                    UIView *tableViewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 80)];
-                    UILabel *userName = [[UILabel alloc] initWithFrame:CGRectMake(74, 35, 230, 22)];
-                    NSString* boldFontName = @"Avenir-Black";
-                    [userName setFont:[UIFont fontWithName:boldFontName size:20]];
-                    userName.text = video.userName;
-                    userName.textColor = [UIColor blueColor];
-                    UIImageView *userImage = [[UIImageView alloc] initWithFrame:CGRectMake(17, 20, 50, 50)];
-                    [userImage setImageWithURL:[NSURL URLWithString:video.userThumbUrl]];
-                    userImage.clipsToBounds = YES;
-                    userImage.layer.cornerRadius = 20.0f;
-                    userImage.layer.borderWidth = 2.0f;
-                    userImage .layer.borderColor = [UIColor blueColor].CGColor;
-                    [tableViewHeader addSubview:userImage];
-                    [tableViewHeader addSubview:userName];
-                    self.tableView.tableHeaderView = tableViewHeader;
-                    
-                    UIView *tableViewFooter = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 45)];
-                    footerActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-                    [footerActivity setFrame:CGRectMake((320 - footerActivity.frame.size.width) / 2, (45 - footerActivity.frame.size.height) / 2, footerActivity.frame.size.width, footerActivity.frame.size.height)];
-                    [tableViewFooter addSubview:footerActivity];
-                    [footerActivity startAnimating];
-                    [footerActivity setHidden:NO];
-                    
-                    self.tableView.tableFooterView = tableViewFooter;
+                    [self setupTableviewHeaderAndFooter:video.userThumbUrl userNanme:video.userName];
                 }
                 
                 [self.tableView reloadData];
