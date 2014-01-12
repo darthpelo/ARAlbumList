@@ -223,7 +223,6 @@ static NSInteger const max_pages = 3;
     [cell.activityIndicator setHidden:NO];
     if (video.videoThumb == nil) {
         [albumRequest requestAlbumThumb:video.videoThumbUrl success:^(UIImage *image) {
-            if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 ARAAlbumCell *updateCell = (id)[tableView cellForRowAtIndexPath:indexPath];
                 if (updateCell) {
@@ -233,12 +232,6 @@ static NSInteger const max_pages = 3;
                     [cell.activityIndicator setHidden:YES];
                 }
             });
-            } else {
-                cell.picImageView.image = image;
-                video.videoThumb = image;
-                [cell.activityIndicator stopAnimating];
-                [cell.activityIndicator setHidden:YES];
-            }
         } failure:^{
 #ifdef DEBUG
             NSLog(@"Fail download image");
