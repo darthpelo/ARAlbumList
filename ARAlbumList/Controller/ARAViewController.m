@@ -47,7 +47,8 @@ static NSInteger const max_pages = 3;
 {
     [super viewDidLoad];
     
-    self.navigationController.navigationBar.barTintColor = [UIColor blueColor];
+    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+        self.navigationController.navigationBar.barTintColor = [UIColor blueColor];
     
     UIRefreshControl *refresh = [[UIRefreshControl alloc] init];
     refresh.attributedTitle = [[NSAttributedString alloc] initWithString:@"Pull to Refresh"];
@@ -65,8 +66,15 @@ static NSInteger const max_pages = 3;
         videoList = [[NSMutableArray alloc] init];
         
         alertDownload = [[UIAlertView alloc] initWithTitle:@"Downloading..." message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
-        act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-        [alertDownload setValue:act forKey:@"accessoryView"];
+        if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+            act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            [alertDownload setValue:act forKey:@"accessoryView"];
+        }
+        else {
+            act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+            act.frame=CGRectMake(135, 50, 16, 16);
+            [alertDownload addSubview:act];
+        }
         [alertDownload show];
         [act startAnimating];
         
@@ -87,17 +95,23 @@ static NSInteger const max_pages = 3;
 {
     if (videoList == nil)
         videoList = [[NSMutableArray alloc] init];
-    [videoList removeAllObjects];
     
     alertDownload = [[UIAlertView alloc] initWithTitle:@"Downloading..." message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
     act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    [alertDownload setValue:act forKey:@"accessoryView"];
+    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+        act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        [alertDownload setValue:act forKey:@"accessoryView"];
+    }
+    else {
+        act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        act.frame = CGRectMake(135, 50, 16, 16);
+        [alertDownload addSubview:act];
+    }
     [alertDownload show];
     [act startAnimating];
-    
+    // Reset lastPage counter to reload all data, but reset videoList and tableview later
+    // only to UI purpose
     lastPage = 0;
-    
-    [self.tableView reloadData];
     
     [self getAlbumList];
     
@@ -129,6 +143,10 @@ static NSInteger const max_pages = 3;
                 [footerActivity stopAnimating];
                 [footerActivity setHidden:YES];
             } else {
+                // Check if user refresh view
+                if (lastPage == 1 && videoList.count > 0)
+                    [videoList removeLastObject];
+                
                 for (NSDictionary *dict in responseData) {
                     ARAVideo *video = [[ARAVideo alloc] init];
                     [video deserializeDictionary:dict];
@@ -205,6 +223,7 @@ static NSInteger const max_pages = 3;
     [cell.activityIndicator setHidden:NO];
     if (video.videoThumb == nil) {
         [albumRequest requestAlbumThumb:video.videoThumbUrl success:^(UIImage *image) {
+            if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 ARAAlbumCell *updateCell = (id)[tableView cellForRowAtIndexPath:indexPath];
                 if (updateCell) {
@@ -214,6 +233,12 @@ static NSInteger const max_pages = 3;
                     [cell.activityIndicator setHidden:YES];
                 }
             });
+            } else {
+                cell.picImageView.image = image;
+                video.videoThumb = image;
+                [cell.activityIndicator stopAnimating];
+                [cell.activityIndicator setHidden:YES];
+            }
         } failure:^{
 #ifdef DEBUG
             NSLog(@"Fail download image");
